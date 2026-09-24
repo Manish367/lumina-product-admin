@@ -22,13 +22,6 @@ Registered application users are authenticated through MongoDB.
 
 ## Live Demo
 
-Add your deployed Vercel or Netlify URL here.
-
----
-
-## GitHub Repository
-
-Add your public GitHub repository URL here.
 
 ---
 
