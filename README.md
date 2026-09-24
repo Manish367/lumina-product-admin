@@ -1,13 +1,9 @@
-Absolutely bro. Here is the **complete `README.md` copy-paste version**. Just replace everything currently in your `README.md` with this:
 
-````markdown
 # Lumina Product Admin Dashboard
 
 A polished full-stack product administration dashboard built with **Next.js, React, Tailwind CSS, TypeScript and Axios**, using the required **DummyJSON API** with **MongoDB Atlas** and **Cloudinary** for persistent application features.
 
 Lumina was built for the Frontend Assignment: Product Admin Dashboard and extends the required DummyJSON functionality with persistent product mutations, user accounts, product ownership, reviews and image uploads.
-
----
 
 ## Demo Credentials
 
