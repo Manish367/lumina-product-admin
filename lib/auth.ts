@@ -1,10 +1,5 @@
-import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-
-const COOKIE_NAME = "lumina_session";
-const secret = process.env.JWT_SECRET;
-if (!secret)
-  throw new Error("JWT_SECRET is not configured. Add it to .env.local.");
+import jwt from "jsonwebtoken";
 
 export type SessionUser = {
   id: string;
@@ -16,41 +11,41 @@ export type SessionUser = {
   provider: "dummyjson" | "mongodb";
 };
 
+export const sessionCookie = "lumina_session";
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    throw new Error("JWT_SECRET is not configured.");
+  }
+
+  return secret;
+}
+
 export function signSession(user: SessionUser) {
-  return jwt.sign({ ...user }, secret, { expiresIn: "7d" });
+  return jwt.sign(
+    { ...user },
+    getJwtSecret(),
+    { expiresIn: "7d" },
+  );
 }
 
 export function verifySessionToken(token: string) {
-  return jwt.verify(token, secret) as SessionUser & jwt.JwtPayload;
-}
-
-export async function getSessionUser(): Promise<SessionUser | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-  if (!token) return null;
   try {
-    return verifySessionToken(token);
+    return jwt.verify(token, getJwtSecret()) as SessionUser;
   } catch {
     return null;
   }
 }
 
-export async function requireSession() {
-  const user = await getSessionUser();
-  if (!user) throw new Error("UNAUTHORIZED");
-  return user;
-}
+export async function getSessionUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(sessionCookie)?.value;
 
-export function sessionCookie(token: string) {
-  return {
-    name: COOKIE_NAME,
-    value: token,
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  };
-}
+  if (!token) {
+    return null;
+  }
 
-export { COOKIE_NAME };
+  return verifySessionToken(token);
+}
