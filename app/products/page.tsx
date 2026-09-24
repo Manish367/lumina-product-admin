@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -902,4 +903,21 @@ function ProductDashboard() {
   );
 }
 
-export default ProductDashboard;
+// export default ProductDashboard;
+function ProductsPageFallback() {
+  return (
+    <AppShell>
+      <div className="glass rounded-2xl">
+        <Spinner label="Loading catalog…" />
+      </div>
+    </AppShell>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductsPageFallback />}>
+      <ProductDashboard />
+    </Suspense>
+  );
+}
