@@ -229,11 +229,9 @@ export default function ProductForm({
       dimensions:
         form.width !== "" || form.height !== "" || form.depth !== ""
           ? {
-              width: form.width !== "" ? Number(form.width) : undefined,
-
-              height: form.height !== "" ? Number(form.height) : undefined,
-
-              depth: form.depth !== "" ? Number(form.depth) : undefined,
+              width: form.width !== "" ? Number(form.width) : 0,
+              height: form.height !== "" ? Number(form.height) : 0,
+              depth: form.depth !== "" ? Number(form.depth) : 0,
             }
           : undefined,
 
