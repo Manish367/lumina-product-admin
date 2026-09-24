@@ -22,7 +22,7 @@ Registered application users are authenticated through MongoDB.
 
 ## Live Demo
 
-
+https://lumina-product-admin.vercel.app/login?next=%2Fproducts
 ---
 
 # Tech Stack
