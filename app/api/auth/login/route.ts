@@ -10,16 +10,18 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
     const username = String(body?.username || "").trim();
     const password = String(body?.password || "");
 
-    if (!username || !password)
+    if (!username || !password) {
       return NextResponse.json(
         { message: "Username and password are required." },
         { status: 400 },
       );
+    }
 
-    // Keep the assignment's required DummyJSON demo credentials working exactly as requested.
+    // Keep the assignment's required DummyJSON demo credentials working.
     if (username.toLowerCase() === "emilys") {
       try {
         const { data } = await dummyApi.post("/auth/login", {
@@ -27,6 +29,7 @@ export async function POST(request: Request) {
           password,
           expiresInMins: 60,
         });
+
         const user: SessionUser = {
           id: String(data.id),
           username: data.username,
@@ -36,11 +39,14 @@ export async function POST(request: Request) {
           role: "admin",
           provider: "dummyjson",
         };
+
         const response = NextResponse.json({
           user,
           accessToken: data.accessToken || data.token,
         });
+
         response.cookies.set(sessionCookie(signSession(user)));
+
         return response;
       } catch {
         return NextResponse.json(
@@ -50,26 +56,28 @@ export async function POST(request: Request) {
       }
     }
 
+    // MongoDB registered-user login.
     await connectMongo();
-    type LoginUserRecord = {
-    _id: unknown;
-    username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    role: "admin" | "user";
-    passwordHash: string;
-  };
 
-  const userRecord = await User.findOne({
-    username: username.toLowerCase(),
-  })
-    .select("+passwordHash")
-    .lean<LoginUserRecord>();
-    if (
-      !userRecord ||
-      !(await bcrypt.compare(password, userRecord.passwordHash))
-    ) {
+    const userRecord = await User.findOne({
+      username: username.toLowerCase(),
+    })
+      .select("+passwordHash")
+      .exec();
+
+    if (!userRecord) {
+      return NextResponse.json(
+        { message: "Invalid username or password." },
+        { status: 401 },
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      userRecord.passwordHash,
+    );
+
+    if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Invalid username or password." },
         { status: 401 },
@@ -85,12 +93,17 @@ export async function POST(request: Request) {
       role: userRecord.role as "admin" | "user",
       provider: "mongodb",
     };
+
     const response = NextResponse.json({ user });
+
     response.cookies.set(sessionCookie(signSession(user)));
+
     return response;
   } catch (error: any) {
     return NextResponse.json(
-      { message: error?.message || "Unable to sign in." },
+      {
+        message: error?.message || "Unable to sign in.",
+      },
       { status: 500 },
     );
   }
