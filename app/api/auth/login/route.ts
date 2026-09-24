@@ -51,9 +51,21 @@ export async function POST(request: Request) {
     }
 
     await connectMongo();
-    const userRecord = await User.findOne({ username: username.toLowerCase() })
-      .select("+passwordHash")
-      .lean();
+    type LoginUserRecord = {
+    _id: unknown;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: "admin" | "user";
+    passwordHash: string;
+  };
+
+  const userRecord = await User.findOne({
+    username: username.toLowerCase(),
+  })
+    .select("+passwordHash")
+    .lean<LoginUserRecord>();
     if (
       !userRecord ||
       !(await bcrypt.compare(password, userRecord.passwordHash))
