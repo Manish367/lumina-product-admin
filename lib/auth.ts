@@ -11,15 +11,19 @@ export type SessionUser = {
   provider: "dummyjson" | "mongodb";
 };
 
-export const sessionCookie = (token: string) => ({
-  name: "lumina_session",
-  value: token,
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: 60 * 60 * 24 * 7,
-});
+export const COOKIE_NAME = "lumina_session";
+
+export function sessionCookie(token: string) {
+  return {
+    name: COOKIE_NAME,
+    value: token,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  };
+}
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -35,7 +39,9 @@ export function signSession(user: SessionUser) {
   return jwt.sign(
     { ...user },
     getJwtSecret(),
-    { expiresIn: "7d" },
+    {
+      expiresIn: "7d",
+    },
   );
 }
 
@@ -54,7 +60,7 @@ export async function getSessionUser() {
   const cookieStore = await cookies();
 
   const token = cookieStore.get(
-    "lumina_session",
+    COOKIE_NAME,
   )?.value;
 
   if (!token) {
